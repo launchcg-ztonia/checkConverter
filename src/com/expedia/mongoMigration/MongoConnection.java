@@ -18,11 +18,9 @@ import java.util.Iterator;
 
 public class MongoConnection {
 	
-	private static MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+	private static MongoClient mongoClient;
 	
 	private static final String CHECKS_COLL_NAME = "checks";
-	
-	private static final String OLD_CHECKS_COLL_NAME = "checks_old";
 	
 	private static DB db;
 	
@@ -60,31 +58,18 @@ public class MongoConnection {
 		}
 	}
 	
-	public DBObject[] getOldChecks(){
-		DBCollection oldChecks = this.getCollection(OLD_CHECKS_COLL_NAME);
-		ArrayList<DBObject> allOldChecks = new ArrayList<DBObject>();
-		DBCursor cursor = oldChecks.find();
+	public DBObject[] getChecks(){
+		DBCollection checks = this.getCollection(CHECKS_COLL_NAME);
+		ArrayList<DBObject> allChecks = new ArrayList<DBObject>();
+		DBCursor cursor = checks.find();
 		while (cursor.hasNext()){
-			DBObject oldCheck = cursor.next();
-			allOldChecks.add(oldCheck);
+			DBObject check = cursor.next();
+			allChecks.add(check);
 		}
 		cursor.close();
-		DBObject[] oldCheckArray = new DBObject[allOldChecks.size()];
-		allOldChecks.toArray(oldCheckArray);
-		return oldCheckArray;
-	}
-	
-	public boolean updateCheckID(DBObject check){
-		String oldIDSlot = null;
-		try {
-			oldIDSlot = (String)check.get("_id");
-			check.put("id", oldIDSlot);
-			return true;
-		}
-		catch (Exception e){
-			System.out.println("Errors encountered when moving id " + oldIDSlot);
-			return false;
-		}
+		DBObject[] checkArray = new DBObject[allChecks.size()];
+		allChecks.toArray(checkArray);
+		return checkArray;
 	}
 	
 	public boolean disableCheck(DBObject check){
@@ -99,24 +84,6 @@ public class MongoConnection {
 	}
 	
 
-
-	public boolean deleteOldCheck(DBObject check){
-		DBCollection oldChecks = this.getCollection(OLD_CHECKS_COLL_NAME);
-		try {
-			WriteResult result = oldChecks.remove(check);
-			if (result.getN() > 0){
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-		catch (Exception e){
-			System.out.println("Failed to delete check #" + check.get("_id"));
-			return false;
-		}
-	}
-	
 	private DBCollection getCollection(String collectionName){
 		DBCollection coll = db.getCollection(collectionName);
 		return coll;
@@ -143,13 +110,10 @@ public class MongoConnection {
 	private BasicDBList convertCheckSubscriptions(BasicDBList subscriptions){
 		BasicDBList convertedSubscriptions = new BasicDBList();
 		Iterator<Object> iterator = subscriptions.iterator();
-		String oldIDSlot = null;
 		while (iterator.hasNext()){
 			DBObject subscription = null;
 			try {
 				subscription = (DBObject)iterator.next();
-				oldIDSlot = (String)subscription.get("_id");
-				//subscription.put("id", oldIDSlot);
 				String type = (String)subscription.get("type");
 				if (type.equals("EOS")){
 					subscription.put("type", "SCRIPT");
