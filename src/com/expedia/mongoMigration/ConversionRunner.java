@@ -19,7 +19,8 @@ public class ConversionRunner {
 			worker = new MongoConnection(databaseHost, databaseName, null, null);
 		}
 		*/
-
+        
+        String importFileName = "import.json";
 		String migrationType = args[0];
 		String sourceHostname = args[1];
 		String destinationHostname = args[2];
