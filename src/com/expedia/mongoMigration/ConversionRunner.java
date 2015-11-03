@@ -24,12 +24,12 @@ public class ConversionRunner {
 		String sourceHostname = args[1];
 		String destinationHostname = args[2];
 
-		source = new MongoConnection(sourceHostname, 'seyren', null, null);
-		destination = new MongoConnection(destinationHostname, 'seyren', null, null);
+		source = new MongoConnection(sourceHostname, "seyren", null, null);
+		destination = new MongoConnection(destinationHostname, "seyren", null, null);
 
-		if (migrationType == 'migrateAndDisable' || migrationType == 'migrate') {
+		if (migrationType == "migrateAndDisable" || migrationType == "migrate") {
 			boolean disable = true;
-			if (migrationType == 'migrate') {
+			if (migrationType == "migrate") {
 				disable = false;
 			}
 			boolean dropCurrentChecksSuccess = destination.dropCurrentChecks();
