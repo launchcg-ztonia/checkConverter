@@ -90,12 +90,12 @@ public class MongoConnection {
 	}
 	
 	
-	public boolean convertCheckSubscriptions(DBObject check){
+	public boolean convertCheckSubscriptions(DBObject check, boolean disable){
 		try {
 			BasicDBList subscriptions = (BasicDBList) check.get("subscriptions");
 			if (subscriptions != null){
 				if (subscriptions.size() > 0){
-					BasicDBList convertedSubscriptions = convertCheckSubscriptions(subscriptions);
+					BasicDBList convertedSubscriptions = convertCheckSubscriptions(subscriptions, disable);
 					check.put("subscriptions", convertedSubscriptions);
 				}
 			}
@@ -107,7 +107,7 @@ public class MongoConnection {
 		}
 	}
 	
-	private BasicDBList convertCheckSubscriptions(BasicDBList subscriptions){
+	private BasicDBList convertCheckSubscriptions(BasicDBList subscriptions, boolean disable){
 		BasicDBList convertedSubscriptions = new BasicDBList();
 		Iterator<Object> iterator = subscriptions.iterator();
 		while (iterator.hasNext()){
@@ -121,7 +121,9 @@ public class MongoConnection {
 					String newTarget = cutOffPort(oldTarget);
 					subscription.put("target", newTarget);
 				}
-				subscription.put("enabled", false);
+				if (disable) {
+					subscription.put("enabled", false);
+				}
 				convertedSubscriptions.add(subscription);
 			}
 			catch (Exception e){

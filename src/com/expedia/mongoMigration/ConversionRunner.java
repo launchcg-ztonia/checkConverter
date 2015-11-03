@@ -20,19 +20,27 @@ public class ConversionRunner {
 		}
 		*/
 
-        String importFileName = args[0]
+		String migrationType = args[0];
 		String sourceHostname = args[1];
 		String destinationHostname = args[2];
 
 		source = new MongoConnection(sourceHostname, 'seyren', null, null);
 		destination = new MongoConnection(destinationHostname, 'seyren', null, null);
 
-		boolean dropCurrentChecksSuccess = destination.dropCurrentChecks();
-		DBObject[] sourceChecks = worker.getChecks();
-		for (DBObject check : sourceChecks){
-			boolean disableSuccess = worker.disableCheck(check);
-			boolean convertSuccess = worker.convertCheckSubscriptions(check);
-			boolean saveSuccess = worker.saveCheck(check);
+		if (migrationType == 'migrateAndDisable' || migrationType == 'migrate') {
+			boolean disable = true;
+			if (migrationType == 'migrate') {
+				disable = false;
+			}
+			boolean dropCurrentChecksSuccess = destination.dropCurrentChecks();
+			DBObject[] sourceChecks = source.getChecks();
+			for (DBObject check : sourceChecks){
+				if (disable) {
+					boolean disableSuccess = destination.disableCheck(check);
+				}
+				boolean convertSuccess = destination.convertCheckSubscriptions(check, disable);
+				boolean saveSuccess = destination.saveCheck(check);
+			}
 		}
 	}
 
